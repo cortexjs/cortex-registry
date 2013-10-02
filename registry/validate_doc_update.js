@@ -33,7 +33,7 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
 
   // admins can do ANYTHING (even break stuff)
   try {
-    if (isAdmin()) return
+    if (isAdmin() || isSCM()) return
   } catch (er) {
     assert(false, "failed checking admin-ness")
   }
@@ -127,6 +127,10 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
       }
     }
     return user && user.roles.indexOf("_admin") >= 0
+  }
+
+  function isSCM() {
+    return user && ~ user.roles.indexOf("scm");
   }
 
   try {
