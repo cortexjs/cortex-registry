@@ -12,6 +12,5 @@
     "semver": "~2.0.10"
   },
   "devDependencies": {
-    "jsontool": "~4.0.0"
   }
 }
