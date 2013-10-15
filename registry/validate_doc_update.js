@@ -208,6 +208,7 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   }
   for (var ver in versions) {
     var version = versions[ver]
+    var cortex = version.cortex || {};
     assert(semver.valid(ver, true),
            "invalid version: " + ver)
     assert(typeof version === "object",
@@ -218,9 +219,9 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
            "version "+ver+" has incorrect name: "+version.name)
 
     depCount = 0
-    for (var dep in version.dependencies || {}) ridiculousDeps()
-    for (var dep in version.devDependencies || {}) ridiculousDeps()
-    for (var dep in version.optionalDependencies || {}) ridiculousDeps()
+    for (var dep in cortex.dependencies || {}) ridiculousDeps()
+    for (var dep in cortex.devDependencies || {}) ridiculousDeps()
+    for (var dep in cortex.optionalDependencies || {}) ridiculousDeps()
   }
 
   assert(Array.isArray(doc.maintainers),
