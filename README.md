@@ -4,6 +4,20 @@ registry/ is the JSON API for the package registry.
 
 www/ is the code for search.npmjs.org, eventually maybe www.npmjs.org
 
+## Installation
+
+Install `cortex-registry` without duplication for CentOS:
+
+1. edit "/etc/couchdb/local.ini"
+2. enable [admins] field, add `user = pass`
+3. Add `secure_rewrites` to the `httpd` section and set the value to `false`, related to isaacs/npmjs.org#15
+4. update document
+
+```
+	couchapp push www/app.js http://user:pass@localhost:5984/registry
+```
+
+
 # Installing
 
 You'll need CouchDB version 1.1.0 or higher.  We're using some newish features.
