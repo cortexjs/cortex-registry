@@ -14,7 +14,7 @@ Install `cortex-registry` without duplication for CentOS:
 4. update document
 
 ```
-	couchapp push www/app.js http://user:pass@localhost:5984/registry
+	couchapp push registry/app.js http://user:pass@localhost:5984/registry
 ```
 
 
