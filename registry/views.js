@@ -381,7 +381,8 @@ views.dependedUpon = { map: function (doc) {
   if (!l) return
   var desc = doc.description || l.description || ''
   var readme = doc.readme || l.readme || ''
-  var d = l.cortex && l.cortex.dependencies || {};
+  var d = l.dependencies
+  // var d = l.cortex && l.cortex.dependencies || {};
   if (!d) return
   for (var dep in d) {
     emit([dep, doc._id, desc, readme], 1)
@@ -398,7 +399,8 @@ views.dependentVersions = { map: function (doc) {
   if (!l) return
   l = doc.versions && doc.versions[l]
   if (!l) return
-  var deps = l.cortex && l.cortex.dependencies || {};
+  var d = l.dependencies
+  // var deps = l.cortex && l.cortex.dependencies || {};
   if (!deps) return
   for (var dep in deps)
     emit([dep, deps[dep], doc._id], 1)
