@@ -1,5 +1,5 @@
 module.exports =
-  [ { from: "/", to:"../../../registry", method: "GET" }
+  [ { from: "/", to:"../..", method: "GET" }
   , { from: "/-/jsonp/:jsonp", to:"_list/short/listAll", method: "GET" }
 
   , { from: "/_session", to: "../../../_session", method: "GET" }
@@ -66,6 +66,12 @@ module.exports =
   , { from: "/:pkg/:version/-/jsonp/:jsonp", to: "_show/package/:pkg"
     , method: "GET" }
 
+  , { from: "/npm/public/registry/:pkg/_attachments/:att", to: "../../:pkg/:att", method: "GET" }
+  , { from: "/npm/public/registry/:pkg/_attachments/:att/:rev", to: "../../:pkg/:att", method: "PUT" }
+  , { from: "/npm/public/registry/:pkg/_attachments/:att/-rev/:rev", to: "../../:pkg/:att", method: "PUT" }
+  , { from: "/npm/public/registry/:pkg/_attachments/:att/:rev", to: "../../:pkg/:att", method: "DELETE" }
+  , { from: "/npm/public/registry/:pkg/_attachments/:att/-rev/:rev", to: "../../:pkg/:att", method: "DELETE" }
+
   , { from: "/:pkg/-/:att", to: "../../:pkg/:att", method: "GET" }
   , { from: "/:pkg/-/:att/:rev", to: "../../:pkg/:att", method: "PUT" }
   , { from: "/:pkg/-/:att/-rev/:rev", to: "../../:pkg/:att", method: "PUT" }
@@ -89,7 +95,8 @@ module.exports =
   , { from: "/:pkg/:version/-pre/:pre/-rev/:rev", to: "_update/package/:pkg"
     , method: "PUT" }
 
-  , { from: "/:pkg/-rev/:rev", to: "../../:pkg", method: "DELETE" }
+  , { from: "/:pkg/-rev/:rev", to: "_update/delete/:pkg", method: "DELETE" }
+
 
   , {from:'/-/_view/*', to:'_view/*', method: 'GET'}
   , {from:'/-/_list/*', to:'_list/*', method: 'GET'}

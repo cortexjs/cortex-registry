@@ -1,16 +1,20 @@
 {
   "name": "npmjs.org",
-  "version": "1.0.1",
+  "version": "2.0.5",
   "description": "The npmjs.org registry couchapp",
   "scripts": {
     "start": "./push.sh",
-    "load": "./load-views.sh",
-    "copy": "./copy.sh"
+    "load": "bash ./load-views.sh",
+    "copy": "bash ./copy.sh",
+    "test": "tap test/*.js"
   },
   "dependencies": {
-    "couchapp": "~0.9",
-    "semver": "~2.0.10"
+    "couchapp": "~0.10",
+    "semver": "~2.1.0"
   },
   "devDependencies": {
+    "jsontool": "~7.0.1",
+    "tap": "*",
+    "rimraf": "~2.2.6"
   }
 }

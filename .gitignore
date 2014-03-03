@@ -47,4 +47,5 @@ reference/
 jscoverage_lib/
 temp/
 
-
+.delete
+test/fixtures/npmrc*

@@ -131,6 +131,12 @@ ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx, secObj) {
     return false; // default to no admin
   }
 
+  if (newDoc.name.length > 50) {
+    throw({
+      forbidden: 'Username is too long.  Pick a shorter one.'
+    })
+  }
+
   if (!is_server_or_database_admin(userCtx, secObj)) {
     if (oldDoc) { // validate non-admin updates
       if (userCtx.name !== newDoc.name) {
@@ -268,6 +274,15 @@ ddoc.views = {
     }
   }, reduce: '_sum'}
 }
+
+ddoc.views.conflicts = { map: function (doc) {
+  if (doc._conflicts) {
+    for (var i = 0; i < doc._conflicts.length; i++) {
+      emit([doc._id, doc._conflicts[i]], 1)
+    }
+  }
+}, reduce: "_sum" }
+
 
 if (require.main === module) {
   console.log(JSON.stringify(ddoc, function (k, v) {

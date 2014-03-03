@@ -1,7 +1,62 @@
 
 var views = module.exports = exports = {}
 
+views.norevs = { map: function (doc) {
+  if (doc._revisions && doc._revisions.ids.length === 1 &&
+      doc._revisions.start > 3) {
+    // we have a problem
+    emit(doc._id, 1)
+  }
+}, reduce: "_sum" }
+
+views.conflicts = { map: function (doc) {
+  if (doc._conflicts) {
+    for (var i = 0; i < doc._conflicts.length; i++) {
+      emit([doc._id, doc._conflicts[i]], 1)
+    }
+  }
+}, reduce: "_sum" }
+
+views.oddhost = { map: function (doc) {
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
+
+  if (!doc.versions || Object.keys(doc.versions).length === 0)
+    return
+  if (doc._id.match(/^npm-test-.+$/) &&
+      doc.maintainers &&
+      doc.maintainers[0].name === 'isaacs')
+    return
+  Object.keys(doc.versions).forEach(function (v) {
+    var ver = doc.versions[v]
+    if (!ver.dist.tarball.match(/^https?:\/\/registry.npmjs.org\//)) {
+      emit([doc._id, ver._id, ver.dist.tarball], 1)
+    }
+  })
+}, reduce: "_sum" }
+
 views.noCDN = { map: function (doc) {
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
+
   if (!doc.versions || Object.keys(doc.versions).length === 0)
     return
   Object.keys(doc.versions).forEach(function(v) {
@@ -30,6 +85,25 @@ views.allVersions = { map: function(doc) {
 
 views.modified = { map: modifiedTimeMap }
 function modifiedTimeMap (doc) {
+  function parse (s) {
+    // s is something like "2010-12-29T07:31:06Z"
+    s = s.split("T")
+    var ds = s[0]
+      , ts = s[1]
+      , d = new Date()
+    ds = ds.split("-")
+    ts = ts.split(":")
+    var tz = ts[2].substr(2)
+    ts[2] = ts[2].substr(0, 2)
+    d.setUTCFullYear(+ds[0])
+    d.setUTCMonth(+ds[1]-1)
+    d.setUTCDate(+ds[2])
+    d.setUTCHours(+ts[0])
+    d.setUTCMinutes(+ts[1])
+    d.setUTCSeconds(+ts[2])
+    d.setUTCMilliseconds(0)
+    return d.getTime()
+  }
   if (!doc.versions || doc.deprecated) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -38,11 +112,30 @@ function modifiedTimeMap (doc) {
   var latest = doc["dist-tags"].latest
   if (!doc.versions[latest]) return
   var time = doc.time && doc.time[latest] || 0
-  var t = new Date(time)
+  var t = new Date(parse(time))
   emit(t.getTime(), doc)
 }
 
 views.modifiedPackage = { map: function (doc) {
+  function parse (s) {
+    // s is something like "2010-12-29T07:31:06Z"
+    s = s.split("T")
+    var ds = s[0]
+      , ts = s[1]
+      , d = new Date()
+    ds = ds.split("-")
+    ts = ts.split(":")
+    var tz = ts[2].substr(2)
+    ts[2] = ts[2].substr(0, 2)
+    d.setUTCFullYear(+ds[0])
+    d.setUTCMonth(+ds[1]-1)
+    d.setUTCDate(+ds[2])
+    d.setUTCHours(+ts[0])
+    d.setUTCMinutes(+ts[1])
+    d.setUTCSeconds(+ts[2])
+    d.setUTCMilliseconds(0)
+    return d.getTime()
+  }
   if (!doc.versions || doc.deprecated) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -51,7 +144,7 @@ views.modifiedPackage = { map: function (doc) {
   var latest = doc["dist-tags"].latest
   if (!doc.versions[latest]) return
   var time = doc.time && doc.time[latest] || 0
-  var t = new Date(time)
+  var t = new Date(parse(time))
   emit([doc._id, t.getTime()], doc)
 }}
 
@@ -95,6 +188,17 @@ views.countVersions = { map: function (doc) {
 
 views.byKeyword = {
   map: function (doc) {
+    Array.isArray = Array.isArray || function isArray (a) {
+      return a instanceof Array
+        || Object.prototype.toString.call(a) === "[object Array]"
+        || (typeof a === "object" && typeof a.length === "number") }
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
     if (!doc || !doc.versions || !doc['dist-tags'] || doc.deprecated) return
     if (doc._id.match(/^npm-test-.+$/) &&
         doc.maintainers &&
@@ -111,6 +215,18 @@ views.byKeyword = {
 
 views.byField = {
   map: function (doc) {
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
+
     if (!doc || !doc.versions || !doc["dist-tags"]) return
     if (doc._id.match(/^npm-test-.+$/) &&
         doc.maintainers &&
@@ -137,6 +253,18 @@ views.byField = {
 
 views.needBuild = {
   map : function (doc) {
+
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
 
     if (!doc || !doc.versions || !doc["dist-tags"]) return
     if (doc._id.match(/^npm-test-.+$/) &&
@@ -203,6 +331,11 @@ views.nodeWafInstall = {
 
 views.badBins = {
   map : function (doc) {
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+
     if (!doc || !doc.versions || !doc["dist-tags"]) return
     if (doc._id.match(/^npm-test-.+$/) &&
         doc.maintainers &&
@@ -240,7 +373,46 @@ views.orphanAttachments = {
   }
 }
 
+views.noAttachment = {
+  map: function (doc) {
+    if (!doc || !doc._id) return
+    var att = doc._attachments || {}
+    var versions = doc.versions || {}
+    var missing = []
+    for (var i in versions) {
+      var v = versions[i]
+      if (!v.dist || !v.dist.tarball) {
+        emit([doc._id, i, null], 1)
+        continue
+      }
+      var f = v.dist.tarball.match(/([^\/]+\.tgz$)/)
+      if (!f) {
+        emit([doc._id, i, v.dist.tarball], 1)
+        continue
+      }
+      f = f[1]
+      if (!f || !att[f]) {
+        emit([doc._id, i, v.dist.tarball], 1)
+        continue
+      }
+    }
+  },
+  reduce: "_sum"
+}
+
 views.starredByUser = { map : function (doc) {
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
+
   if (!doc || !doc.users) return
   if (doc._id.match(/^npm-test-.+$/) && doc.maintainers[0].name === 'isaacs')
     return
@@ -251,6 +423,19 @@ views.starredByUser = { map : function (doc) {
 }}
 
 views.starredByPackage = { map : function (doc) {
+  Object.keys = Object.keys || function keys (o) {
+      var a = []
+      for (var i in o) a.push(i)
+      return a }
+
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
+
   if (!doc || !doc.users) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -268,6 +453,13 @@ views.byUser = { map : function (doc) {
       doc.maintainers &&
       doc.maintainers[0].name === 'isaacs')
     return
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
   doc.maintainers.forEach(function (m) {
     emit(m.name, doc._id)
   })
@@ -276,6 +468,13 @@ views.byUser = { map : function (doc) {
 
 
 views.browseAuthorsRecent = { map: function (doc) {
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
   if (!doc || !doc.maintainers || doc.deprecated) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -296,6 +495,13 @@ views.browseAuthorsRecent = { map: function (doc) {
 }, reduce: "_sum" }
 
 views.browseAuthors = views.npmTop = { map: function (doc) {
+  Array.prototype.forEach = Array.prototype.forEach || function forEach (fn) {
+      for (var i = 0, l = this.length; i < l; i ++) {
+        if (this.hasOwnProperty(i)) {
+          fn(this[i], i, this)
+        }
+      }
+    }
   if (!doc || !doc.maintainers || doc.deprecated) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -314,6 +520,26 @@ views.browseAuthors = views.npmTop = { map: function (doc) {
 }, reduce: "_sum" }
 
 views.browseUpdated = { map: function (doc) {
+  function parse (s) {
+    // s is something like "2010-12-29T07:31:06Z"
+    s = s.split("T")
+    var ds = s[0]
+      , ts = s[1]
+      , d = new Date()
+    ds = ds.split("-")
+    ts = ts.split(":")
+    var tz = ts[2].substr(2)
+    ts[2] = ts[2].substr(0, 2)
+    d.setUTCFullYear(+ds[0])
+    d.setUTCMonth(+ds[1]-1)
+    d.setUTCDate(+ds[2])
+    d.setUTCHours(+ts[0])
+    d.setUTCMinutes(+ts[1])
+    d.setUTCSeconds(+ts[2])
+    d.setUTCMilliseconds(0)
+    return d.getTime()
+  }
+
   if (!doc || !doc.versions || doc.deprecated) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -325,8 +551,20 @@ views.browseUpdated = { map: function (doc) {
   if (!t) return
   var v = doc.versions[l]
   if (!v) return
-  var d = new Date(t)
+  var d = new Date(parse(t))
   if (!d.getTime()) return
+
+  function pad(n){return n<10 ? '0'+n : n}
+  Date.prototype.toISOString = Date.prototype.toISOString ||
+    function toISOString(){
+      var d = this;
+      return d.getUTCFullYear()+'-'
+           + pad(d.getUTCMonth()+1)+'-'
+           + pad(d.getUTCDate())+'T'
+           + pad(d.getUTCHours())+':'
+           + pad(d.getUTCMinutes())+':'
+           + pad(d.getUTCSeconds())+'Z'}
+
   emit([ d.toISOString(),
          doc._id,
          v.description,
@@ -349,6 +587,25 @@ views.browseAll = { map: function (doc) {
 }, reduce: '_sum' }
 
 views.analytics = { map: function (doc) {
+  function parse (s) {
+    // s is something like "2010-12-29T07:31:06Z"
+    s = s.split("T")
+    var ds = s[0]
+      , ts = s[1]
+      , d = new Date()
+    ds = ds.split("-")
+    ts = ts.split(":")
+    var tz = ts[2].substr(2)
+    ts[2] = ts[2].substr(0, 2)
+    d.setUTCFullYear(+ds[0])
+    d.setUTCMonth(+ds[1]-1)
+    d.setUTCDate(+ds[2])
+    d.setUTCHours(+ts[0])
+    d.setUTCMinutes(+ts[1])
+    d.setUTCSeconds(+ts[2])
+    d.setUTCMilliseconds(0)
+    return d.getTime()
+  }
   if (!doc || !doc.time || doc.deprecated) return
   if (doc._id.match(/^npm-test-.+$/) &&
       doc.maintainers &&
@@ -356,7 +613,7 @@ views.analytics = { map: function (doc) {
     return
   for (var i in doc.time) {
     var t = doc.time[i]
-    var d = new Date(t)
+    var d = new Date(parse(t))
     if (!d.getTime()) return
     var type = i === 'modified' ? 'latest'
              : i === 'created' ? 'created'
