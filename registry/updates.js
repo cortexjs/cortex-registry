@@ -372,19 +372,22 @@ updates.package = function (doc, req) {
           return res
       } else if (nv.deprecated) {
         ov.deprecated = nv.deprecated
-      } else if (!deepEquals(nv, ov)) {
-        d('old=%j', ov)
-        d('new=%j', nv)
-        // Trying to change an existing version!  Shenanigans!
-        // XXX: we COULD just skip this version, and pretend
-        // it worked, without actually updating.  The vdu would
-        // catch it anyway.  Problem there is that then the user
-        // doesn't see their stuff update, and wonders why.
-        return error(
-          'cannot modify pre-existing version: ' + v + '\n' +
-          'old=' + JSON.stringify(ov) + '\n' +
-          'new=' + JSON.stringify(nv))
-      }
+      } 
+
+      // Cortex: just remove this
+      // else if (!deepEquals(nv, ov)) {
+      //   d('old=%j', ov)
+      //   d('new=%j', nv)
+      //   // Trying to change an existing version!  Shenanigans!
+      //   // XXX: we COULD just skip this version, and pretend
+      //   // it worked, without actually updating.  The vdu would
+      //   // catch it anyway.  Problem there is that then the user
+      //   // doesn't see their stuff update, and wonders why.
+      //   return error(
+      //     'cannot modify pre-existing version: ' + v + '\n' +
+      //     'old=' + JSON.stringify(ov) + '\n' +
+      //     'new=' + JSON.stringify(nv))
+      // }
     }
 
     if (revMatch) {
@@ -421,6 +424,27 @@ updates.package = function (doc, req) {
     }
   }
 
+  // Cortex:
+  // try to remove old times
+  function mergeTimes(newdoc, doc){
+    var newtime = newdoc.time
+    var time = doc.time
+
+    // newly created doc might not have a `time` property
+    if (!newtime || JSON.stringify(newtime) === "{}") {
+      return
+    }
+
+    for(var i in time){
+      if (i === "modified" || i === "unpublished") continue
+      if (!(i in newtime)){
+        // Cortex:
+        // remove old time
+        delete time[i]
+      }
+    }
+  }
+
   function updateDoc(newdoc, doc) {
     if (doc.time && doc.time.unpublished) {
       d("previously unpublished", doc.time.unpublished)
@@ -453,17 +477,24 @@ updates.package = function (doc, req) {
       }
     }
 
-    var res = mergeVersions(newdoc, doc)
+    var res;
+    res = mergeVersions(newdoc, doc)
     if (isError(res))
       return res
 
-    var res = mergeUsers(newdoc, doc)
+    res = mergeUsers(newdoc, doc)
     if (isError(res))
       return res
 
-    var res = mergeAttachments(newdoc, doc)
+    res = mergeAttachments(newdoc, doc)
     if (isError(res))
       return res
+
+    // Cortex allow to remove old times
+    res = mergeTimes(newdoc, doc)
+    if (isError(res)) {
+      return res
+    }
 
     return ok(doc, "updated package")
   }
