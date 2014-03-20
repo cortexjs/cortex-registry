@@ -1,7 +1,7 @@
 {
-  "name": "npmjs.org",
-  "version": "2.0.5",
-  "description": "The npmjs.org registry couchapp",
+  "name": "cortex-registry-server",
+  "version": "2.0.6",
+  "description": "The cortexjs.org registry couchapp",
   "scripts": {
     "start": "./push.sh",
     "load": "bash ./load-views.sh",
