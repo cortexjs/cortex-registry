@@ -1,5 +1,6 @@
 # Cortex project
 build/
+_update.sh
 
 # php files
 index.php
