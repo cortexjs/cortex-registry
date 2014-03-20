@@ -1,6 +1,11 @@
-# npmjs.org
+# cortex-registry-server
 
-The design doc for The npm Registry CouchApp
+The design doc for The cortex registry CouchApp
+
+Originally, it is a fork of [npmjs.org](https://github.com/npm/npmjs.org) while now, it had became something different.
+
+- cortex-registry allow to remove old version and time information
+
 
 # Installing
 
@@ -35,18 +40,15 @@ Now install the stuff:
 
 Sync the ddoc to `_design/scratch`
 
-    npm start \
-      --npmjs.org:couch=http://admin:password@localhost:5984/registry
+    npm start --npmjs.org:couch=http://admin:password@localhost:5984/registry
 
 Next, make sure that views are loaded:
 
-    npm run load \
-      --npmjs.org:couch=http://admin:password@localhost:5984/registry
+    npm run load --npmjs.org:couch=http://admin:password@localhost:5984/registry
 
 And finally, copy the ddoc from `_design/scratch` to `_design/app`
 
-    npm run copy \
-      --npmjs.org:couch=http://admin:password@localhost:5984/registry
+    npm run copy --npmjs.org:couch=http://admin:password@localhost:5984/registry
 
 Of course, you can avoid the command-line flag by setting it in your
 ~/.npmrc file:
