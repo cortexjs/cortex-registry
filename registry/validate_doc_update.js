@@ -453,7 +453,13 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   // now go through all the time settings that weren't covered
   for (var v in oldTime) {
     if (v === "modified" || v === "unpublished") continue
-    assert(doc.time[v] === oldTime[v],
+    assert( 
+        // Cortex:
+        // yes, we allow to remove old time
+        !doc.time[v] || 
+
+        // But we don't allow to replace a published version without unpublish it.
+        doc.time[v] === oldTime[v],
            "Cannot replace previously published version: "+v)
   }
 
