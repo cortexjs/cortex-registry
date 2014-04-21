@@ -738,3 +738,33 @@ views.howBigIsYourPackage = {
     emit(doc._id, {_id: doc._id, size: s, count: c, avg: s/c})
   }
 }
+
+
+views.wordSearch = {
+  map : function(doc) {
+    if (!doc || !doc.versions || !doc['dist-tags'] || doc.deprecated) return
+    if (doc._id.match(/^npm-test-.+$/) &&
+        doc.maintainers &&
+        doc.maintainers[0].name === 'isaacs')
+      return
+
+    // keywords
+    var latest = doc['dist-tags'].latest
+    var v = doc.versions[doc['dist-tags'].latest]
+    if (!v || !v.keywords || !v.keywords.forEach) return
+
+    var keywords = v.keywords.join(' ')
+    v.keywords.forEach(function (kw) {
+      emit([kw.toLowerCase(), doc.name, doc.description, latest, v.maintainers[0].name, keywords], 1)
+    })
+
+    emit([doc.name, doc.name, doc.description, latest, v.maintainers[0].name, keywords], 1)
+
+    var m = doc.name.split('-')
+    if(m && m.length> 1) {
+        m.forEach(function(sp) {
+            emit([sp, doc.name, doc.description, latest, v.maintainers[0].name, keywords], 1)
+        })
+    }
+  }, reduce: '_sum'
+}
