@@ -397,3 +397,91 @@ lists.histogram = function (head, req) {
   }).join("\n"))
 }
 
+
+lists.search = function (head, req) {
+  require("monkeypatch").patch(Object, Date, Array, String)
+
+  if (!(req.query.keyword || req.query.name || req.query.author)) {
+    start({"code":"400", "headers": {"Content-Type": "application/json"}})
+    send('{"error":"Please specify a query field parameter"}')
+    return
+  }
+
+  start({"code": 200, "headers": {"Content-Type": "application/json"}})
+  var row
+    , out = []
+    , keyword = (req.query.keyword || "")
+    , name = (req.query.name || "")
+    , author = (req.query.author || "")
+    , listSkip = (req.query.listSkip || 0)
+    , listLimit = (req.query.listLimit || -1)
+
+  while (row = getRow()) {
+    if (listLimit > 0 && out.length >= listLimit) break
+    if (!row.id) continue
+    if (!row.value || !row.value["dist-tags"]) continue
+
+    var doc = row.value
+    var authors = doc.maintainers || [];
+
+    var latest = doc["dist-tags"].latest
+    var time = doc.time && doc.time[latest]
+    var date = new Date(time)
+    doc = doc.versions[latest]
+    if (!doc || !time || !date) continue
+
+    var astr = authors.reduce(function(ary, a) {
+      a && a.name && (ary.push(a.name))
+      return ary
+    }, []).join(', ')
+
+
+    // search in name
+    if (name && (row.id.indexOf(name) > -1)) {
+      if (listSkip-- > 0)
+        continue
+
+      out.push({
+        id: row.id,
+        description: doc.description,
+        keywords: doc.keywords || [],
+        date: date,
+        latest: latest,
+        authors: astr
+      })
+      continue
+    }
+
+
+    if (keyword && (doc.keywords || []).indexOf(keyword) !== -1) {
+      if (listSkip-- > 0)
+        continue
+
+      out.push({
+        id: row.id,
+        description: doc.description,
+        keywords: doc.keywords || [],
+        date: date,
+        latest: latest,
+        authors: astr
+      })
+      continue
+    }
+
+    if (author && (astr.indexOf(author) > -1)) {
+      if(listSkip-- > 0)
+        continue
+
+      out.push({
+        id: row.id,
+        description: doc.description,
+        keywords: doc.keywords || [],
+        date: date,
+        latest: latest,
+        authors: astr
+       })
+    }
+  }
+  send(JSON.stringify(out))
+}
+
