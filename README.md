@@ -5,6 +5,7 @@ The design doc for The cortex registry CouchApp
 Originally, it is a fork of [npmjs.org](https://github.com/npm/npmjs.org) while now, it had became something different.
 
 - cortex-registry allow to remove old version and time information
+- cortex-registry only allow administrator to publish packages, temporarily for now.
 
 
 # Installing

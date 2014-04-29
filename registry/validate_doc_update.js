@@ -207,6 +207,10 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   function validUser () {
     if ( !oldDoc || !oldDoc.maintainers ) return true
     if (isAdmin()) return true
+
+    // only allow admin to publish packages
+    return false;
+
     if (typeof oldDoc.maintainers !== "object") return true
     for (var i = 0, l = oldDoc.maintainers.length; i < l; i ++) {
       if (oldDoc.maintainers[i].name === user.name) return true
