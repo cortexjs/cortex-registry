@@ -2,6 +2,9 @@
 build/
 _update.sh
 
+test/fixtures/*.couch
+test/fixtures/.registry_design
+
 # php files
 index.php
 
