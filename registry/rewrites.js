@@ -29,7 +29,7 @@ module.exports =
   , { from: "/-/prebuilt", to:"_list/preBuilt/needBuild", method: "GET" }
   , { from: "/-/nonlocal", to:"_list/short/nonlocal", method: "GET" }
 
-  , { from : "/favicon.ico", to:"../../npm/favicon.ico", method:"GET" }
+  // , { from : "/favicon.ico", to:"../../npm/favicon.ico", method:"GET" }
 
   , { from: "/-/users", to:"../../../_users/_design/_auth/_list/index/listAll"
     , method: "GET" }
@@ -51,14 +51,14 @@ module.exports =
     , to:"../../../_users/_design/_auth/_list/email/listAll"
     , method: "GET" }
 
-  , { from: "/-/top"
-    , to:"_view/npmTop"
-    , query: { group_level: 1 }
-    , method: "GET" }
+  // , { from: "/-/top"
+  //   , to:"_view/npmTop"
+  //   , query: { group_level: 1 }
+  //   , method: "GET" }
 
   , { from: "/-/by-user/:user", to: "_list/byUser/byUser", method: "GET" }
-  , { from: "/-/starred-by-user/:user", to: "_list/byUser/starredByUser", method: "GET" }
-  , { from: "/-/starred-by-package/:user", to: "_list/byUser/starredByPackage", method: "GET" }
+  // , { from: "/-/starred-by-user/:user", to: "_list/byUser/starredByUser", method: "GET" }
+  // , { from: "/-/starred-by-package/:user", to: "_list/byUser/starredByPackage", method: "GET" }
 
   , { from: "/:pkg", to: "/_show/package/:pkg", method: "GET" }
   , { from: "/:pkg/-/jsonp/:jsonp", to: "/_show/package/:pkg", method: "GET" }
@@ -66,11 +66,11 @@ module.exports =
   , { from: "/:pkg/:version/-/jsonp/:jsonp", to: "_show/package/:pkg"
     , method: "GET" }
 
-  , { from: "/npm/public/registry/:pkg/_attachments/:att", to: "../../:pkg/:att", method: "GET" }
-  , { from: "/npm/public/registry/:pkg/_attachments/:att/:rev", to: "../../:pkg/:att", method: "PUT" }
-  , { from: "/npm/public/registry/:pkg/_attachments/:att/-rev/:rev", to: "../../:pkg/:att", method: "PUT" }
-  , { from: "/npm/public/registry/:pkg/_attachments/:att/:rev", to: "../../:pkg/:att", method: "DELETE" }
-  , { from: "/npm/public/registry/:pkg/_attachments/:att/-rev/:rev", to: "../../:pkg/:att", method: "DELETE" }
+  // , { from: "/npm/public/registry/:pkg/_attachments/:att", to: "../../:pkg/:att", method: "GET" }
+  // , { from: "/npm/public/registry/:pkg/_attachments/:att/:rev", to: "../../:pkg/:att", method: "PUT" }
+  // , { from: "/npm/public/registry/:pkg/_attachments/:att/-rev/:rev", to: "../../:pkg/:att", method: "PUT" }
+  // , { from: "/npm/public/registry/:pkg/_attachments/:att/:rev", to: "../../:pkg/:att", method: "DELETE" }
+  // , { from: "/npm/public/registry/:pkg/_attachments/:att/-rev/:rev", to: "../../:pkg/:att", method: "DELETE" }
 
   , { from: "/:pkg/-/:att", to: "../../:pkg/:att", method: "GET" }
   , { from: "/:pkg/-/:att/:rev", to: "../../:pkg/:att", method: "PUT" }
