@@ -112,6 +112,7 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   finishing(doc)
   finishing(oldDoc)
 
+  // users' stars
   try {
     if (oldDoc) oldDoc.users = oldDoc.users || {}
     doc.users = doc.users || {}
@@ -355,6 +356,7 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
     depCount = 0
     for (var dep in version.dependencies || {}) ridiculousDeps()
     for (var dep in version.devDependencies || {}) ridiculousDeps()
+    for (var dep in version.asyncDependencies || {}) ridiculousDeps()
     for (var dep in version.optionalDependencies || {}) ridiculousDeps()
 
     // NEW versions must only have strings in the 'scripts' field,
@@ -446,17 +448,17 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
       assert(deepEquals(doc.versions[v], oldVersions[v], allowedChange),
              "Changing published version metadata is not allowed")
     } else {
-      // New version
-      assert(typeof doc.versions[v]._npmUser === "object",
-             "_npmUser must be object: " + v)
-      assert(doc.versions[v]._npmUser.name === user.name,
-             "_npmUser.name must match user.name: " + v)
+      // TODO: remove _npmUser
+      // assert(typeof doc.versions[v]._npmUser === "object",
+      //        "_npmUser must be object: " + v)
+      // assert(doc.versions[v]._npmUser.name === user.name,
+      //        "_npmUser.name must match user.name: " + v)
     }
   }
 
   // now go through all the time settings that weren't covered
   for (var v in oldTime) {
-    if (v === "modified" || v === "unpublished") continue
+    if (v === "modified" || v === "unpublished" | v == "created") continue
     assert( 
         // Cortex:
         // yes, we allow to remove old time

@@ -209,7 +209,7 @@ updates.package = function (doc, req) {
     readmeTrim(doc)
 
     if (!doc.maintainers)
-      return error("no maintainers. Please upgrade your npm client.")
+      return error("no maintainers. Please upgrade your cortex client.")
 
     if (output.length) {
       message += "\n" + output.map(function(n) {
@@ -308,7 +308,6 @@ updates.package = function (doc, req) {
     body._id = body.name + "@" + body.version
     d("set body.maintainers to doc.maintainers", doc.maintainers)
     body.maintainers = doc.maintainers
-    body._npmUser = body._npmUser || { name: req.userCtx.name }
 
     if (body.publishConfig && typeof body.publishConfig === 'object') {
       Object.keys(body.publishConfig).filter(function (k) {
