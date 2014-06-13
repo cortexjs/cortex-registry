@@ -202,8 +202,8 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
     if (doc.users && (user.name in doc.users)) {
       assert(typeof doc.users[user.name] === "boolean",
              "star setting must be a boolean, got " + (typeof doc.users[user.name]))
+      return
     }
-    return
   }
 
 
