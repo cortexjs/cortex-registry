@@ -1,4 +1,5 @@
 module.exports = function (doc, oldDoc, user, dbCtx) {
+
   if (typeof console === "object") {
     var d = console.error
   } else {
@@ -121,13 +122,14 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   }
 
   // you may not delete the npm document!
-  if ((doc._deleted || (doc.time && doc.time.unpublished))
-      && doc._id === "npm")
-    throw { forbidden: "you may not delete npm!" }
+  // exclude engines
+  // if ((doc._deleted || (doc.time && doc.time.unpublished))
+  //     && doc._id === "npm")
+  //   throw { forbidden: "you may not delete npm!" }
 
   // admins can do ANYTHING (even break stuff)
   try {
-    if (isAdmin() || isSCM()) return
+    if (isAdmin()) return
   } catch (er) {
     assert(false, "failed checking admin-ness")
   }
@@ -191,6 +193,7 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   assert(!doc.ctime, "doc.ctime is deprecated")
   assert(typeof doc.time === "object", "time must be object")
 
+
   // everyone may alter his "starred" status on any package
   if (oldDoc &&
       !doc.time.unpublished &&
@@ -210,8 +213,6 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
     if (isAdmin()) return true
 
     // only allow admin to publish packages
-    return false;
-
     if (typeof oldDoc.maintainers !== "object") return true
     for (var i = 0, l = oldDoc.maintainers.length; i < l; i ++) {
       if (oldDoc.maintainers[i].name === user.name) return true
@@ -222,21 +223,20 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   function isAdmin () {
     if (dbCtx &&
         dbCtx.admins) {
+      // is in admins.names
       if (dbCtx.admins.names &&
           dbCtx.admins.roles &&
           Array.isArray(dbCtx.admins.names) &&
           dbCtx.admins.names.indexOf(user.name) !== -1) return true
+      // is in admins.roles
       if (Array.isArray(dbCtx.admins.roles)) {
         for (var i = 0; i < user.roles.length; i++) {
           if (dbCtx.admins.roles.indexOf(user.roles[i]) !== -1) return true
         }
       }
     }
+    // admin _roles
     return user && user.roles.indexOf("_admin") >= 0
-  }
-
-  function isSCM() {
-    return user && ~ user.roles.indexOf("scm");
   }
 
   try {
@@ -399,6 +399,7 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
            "created time cannot be changed")
   }
 
+  // about star
   if (oldDoc && oldDoc.users) {
     assert(deepEquals(doc.users,
                       oldDoc.users, [[user.name]]),
