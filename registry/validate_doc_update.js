@@ -247,16 +247,17 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
 
   if (!vu) {
     assert(vu, "user: " + user.name + " not authorized to modify "
-                        + oldDoc.name + "\n"
-                        + diffObj(oldDoc, doc).join("\n"))
+                        + oldDoc.name, diffObj(oldDoc, doc).join("\n"))
   }
 
   // unpublishing.  no sense in checking versions
+  // TODO: change with unpublishing logical
   if (doc.time.unpublished) {
     d(doc)
     assert(oldDoc, "nothing to unpublish")
     if (oldDoc.time)
       assert(!oldDoc.time.unpublished, "already unpublished")
+
     var name = user.name
     var unpublisher = doc.time.unpublished.name
     assert(name === unpublisher, name + "!==" + unpublisher)
@@ -314,15 +315,17 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
   // I'd like to also require this of all past versions, but that
   // means going back and cleaning up about 2000 old package versions,
   // or else *new* versions of those packages can't be published.
-  // Until that time, do this instead:
-  var version = versions[latest]
-  if (version) {
-    if (!version.dist)
-      assert(false, "no dist object in " + latest + " version")
-    if (!version.dist.tarball)
-      assert(false, "no tarball in " + latest + " version")
-    if (!version.dist.shasum)
-      assert(false, "no shasum in " + latest + " version")
+  // valid all the versions
+  for(var ver in versions) {
+    var version = versions[ver];
+    if (version) {
+      if (!version.dist)
+        assert(false, "no dist object in " + latest + " version")
+      if (!version.dist.tarball)
+        assert(false, "no tarball in " + latest + " version")
+      if (!version.dist.shasum)
+        assert(false, "no shasum in " + latest + " version")
+    }
   }
 
   for (var v in doc["dist-tags"]) {
