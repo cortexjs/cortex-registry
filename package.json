@@ -16,5 +16,9 @@
     "jsontool": "~7.0.1",
     "tap": "*",
     "rimraf": "~2.2.6"
+  },
+  "config": {
+    "comment": "change couch to the target deploy server",
+    "couch": "http://admin:admin@localhost:15984/registry"
   }
 }

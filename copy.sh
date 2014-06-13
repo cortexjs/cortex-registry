@@ -36,10 +36,20 @@ if ! [ "$didLoad" == "yes" ]; then
 fi
 
 rev=$(curl -k "$c"/_design/app | json _rev)
+
 auth="$(node -pe 'require("url").parse(process.argv[1]).auth' "$c")"
 url="$(node -pe 'u=require("url");p=u.parse(process.argv[1]);delete p.auth;u.format(p)' "$c")"
 
+
+
+if [ "${rev}" == "" ]; then
+curl "$url/_design/scratch" \
+   -k -u "$auth" \
+  -X COPY \
+  -H destination:'_design/app'
+else
 curl "$url/_design/scratch" \
    -k -u "$auth" \
   -X COPY \
   -H destination:'_design/app?rev='$rev
+fi

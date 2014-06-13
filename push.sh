@@ -2,6 +2,7 @@
 
 c=${npm_package_config_couch}
 
+
 if [ "$c" == "" ]; then
   cat >&2 <<-ERR
 Please set a valid 'npmjs.org:couch' npm config.
