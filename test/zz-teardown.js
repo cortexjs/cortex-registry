@@ -9,6 +9,7 @@ var _users = path.resolve(__dirname, 'fixtures', '_users.couch')
 var db = path.resolve(__dirname, 'fixtures', 'registry.couch')
 var log = path.resolve(__dirname, 'fixtures', 'couch.log')
 var repl = path.resolve(__dirname, 'fixtures', '_replicator.couch')
+var spawn = require('child_process').spawn
 
 test('cleanup', function (t) {
   try {
@@ -30,6 +31,11 @@ test('cleanup', function (t) {
     }
   })
 
-  t.pass('couch is no more')
-  t.end()
+  var c = spawn('cortex', ['profile', 'rm', 'regtest']);
+  c.stderr.pipe(process.stderr);
+  c.stdout.pipe(process.stdout);
+  c.on('close', function(code) {
+    t.pass('couch is no more')
+    t.end()
+  })
 })

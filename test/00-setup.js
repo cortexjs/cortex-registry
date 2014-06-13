@@ -19,10 +19,12 @@ var pidfile = path.resolve(__dirname, 'fixtures', 'pid')
 var logfile = path.resolve(__dirname, 'fixtures', 'couch.log')
 var started = /Apache CouchDB has started on http:\/\/127\.0\.0\.1:15984\/\n$/
 
-test('start couch as a zombie child', function (t) {
+test('start couch as a zombie child', function(t) {
   var fd = fs.openSync(pidfile, 'wx')
 
-  try { fs.unlinkSync(logfile) } catch (er) {}
+  try {
+    fs.unlinkSync(logfile)
+  } catch (er) {}
 
   var child = spawn('couchdb', ['-a', conf], {
     detached: true,
@@ -36,13 +38,13 @@ test('start couch as a zombie child', function (t) {
 
   // wait for it to create a log, give it 5 seconds
   var start = Date.now()
-  fs.readFile(logfile, function R (er, log) {
+  fs.readFile(logfile, function R(er, log) {
     log = log ? log.toString() : ''
     if (!er && !log.match(started))
       er = new Error('not started yet')
     if (er) {
       if (Date.now() - start < 5000)
-        return setTimeout(function () {
+        return setTimeout(function() {
           fs.readFile(logfile, R)
         }, 100)
       else
@@ -65,7 +67,9 @@ test('create test db', function(t) {
     })
     res.on('end', function() {
       c = JSON.parse(c)
-      t.same(c, { ok: true })
+      t.same(c, {
+        ok: true
+      })
       t.end()
     })
   }).end()
@@ -93,6 +97,28 @@ test('ddoc', function(t) {
   c.stdout.pipe(process.stdout)
   c.on('exit', function(code) {
     t.notOk(code)
-    t.end()
+
+    c = spawn('curl', ["http://admin:admin@localhost:15984/registry/_design/scratch", '-k', '-X', 'COPY',
+      '-H', "destination:'_design/app'"
+    ])
+    c.stderr.pipe(process.stderr);
+    c.stdout.pipe(process.stdout);
+    c.on('exit', function(code) {
+      t.notOk(code)
+      t.end()
+    })
   })
+})
+
+
+test('setup profile', function(t) {
+  // TODO: make it posible to override config values
+  var c = spwan('cortex', ['profile', 'add', 'regtest']);
+  c.stderr.pipe(process.stderr)
+  c.stdout.pipe(process.stdout)
+  c.on('exit', function(code) {
+    t.notOk(code)
+
+    t.end()
+  });
 })

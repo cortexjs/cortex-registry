@@ -27,7 +27,7 @@ test('adduser 3', fn.bind(null, conf3, t))
 test('adduser 3 again', fn.bind(null, conf3, t))
 
 function fn(conf, u, t) {
-  var c = spawn('npm', [
+  var c = spawn('cortex', [
     '--registry=' + reg,
     '--userconf=' + conf,
     'adduser'
