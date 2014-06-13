@@ -371,23 +371,21 @@ updates.package = function (doc, req) {
           return res
       } else if (nv.deprecated) {
         ov.deprecated = nv.deprecated
-      } 
-
-      // Cortex: just remove this
-      // else if (!deepEquals(nv, ov)) {
-      //   d('old=%j', ov)
-      //   d('new=%j', nv)
-      //   // Trying to change an existing version!  Shenanigans!
-      //   // XXX: we COULD just skip this version, and pretend
-      //   // it worked, without actually updating.  The vdu would
-      //   // catch it anyway.  Problem there is that then the user
-      //   // doesn't see their stuff update, and wonders why.
-      //   return error(
-      //     'cannot modify pre-existing version: ' + v + '\n' +
-      //     'old=' + JSON.stringify(ov) + '\n' +
-      //     'new=' + JSON.stringify(nv))
-      // }
+      } else if (!deepEquals(nv, ov)) {
+        d('old=%j', ov)
+        d('new=%j', nv)
+        // Trying to change an existing version!  Shenanigans!
+        // XXX: we COULD just skip this version, and pretend
+        // it worked, without actually updating.  The vdu would
+        // catch it anyway.  Problem there is that then the user
+        // doesn't see their stuff update, and wonders why.
+        return error(
+          'cannot modify pre-existing version: ' + v + '\n' +
+          'old=' + JSON.stringify(ov) + '\n' +
+          'new=' + JSON.stringify(nv))
+      }
     }
+
 
     if (revMatch) {
       for (var v in doc.versions) {
