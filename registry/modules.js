@@ -80,8 +80,9 @@ exports.valid =
      if (!name) return false
      var n = name.replace(/^\s+|\s+$/g, '')
      if (!n || n.charAt(0) === "."
-         || !n.match(/^[a-zA-Z0-9]/)
-         || n.match(/[\/\(\)&\?#\|<>@:%\s\\\*'"!~`]/)
+         || !n.match(/^[a-z]/)
+         || !n.match(/[a-z0-9]$/)
+         || !n.match(/^[a-z0-9-.]+$/)
          || n.toLowerCase() === "node_modules"
          || n !== encodeURIComponent(n)
          || n.toLowerCase() === "favicon.ico") {

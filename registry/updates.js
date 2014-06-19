@@ -1,9 +1,13 @@
 var updates = exports
 
-updates.delete = function (doc, req) {
+updates.delete = function(doc, req) {
   if (req.method !== "DELETE")
-    return [ { _id: ".error.", forbidden: "Method not allowed" },
-             { error: "method not allowed" } ]
+    return [{
+      _id: ".error.",
+      forbidden: "Method not allowed"
+    }, {
+      error: "method not allowed"
+    }]
 
   require("monkeypatch").patch(Object, Date, Array, String)
   var t = doc.time || {}
@@ -11,12 +15,14 @@ updates.delete = function (doc, req) {
     name: req.userCtx.name,
     time: new Date().toISOString()
   }
-  return [ {
+  return [{
     _id: doc._id,
     _rev: doc._rev,
     name: doc._id,
     time: t
-  }, JSON.stringify({ ok: "deleted" }) ]
+  }, JSON.stringify({
+    ok: "deleted"
+  })]
 }
 
 // There are three types of things that will be PUT into here.
@@ -39,7 +45,7 @@ updates.delete = function (doc, req) {
 //
 // In all cases, make sure that the "latest" version gets its junk copied
 // onto the root doc.
-updates.package = function (doc, req) {
+updates.package = function(doc, req) {
   require("monkeypatch").patch(Object, Date, Array, String)
   var semver = require("semver")
   var valid = require("valid")
@@ -52,9 +58,9 @@ updates.package = function (doc, req) {
   // couchdb somehow.
   var DEBUG = false
   if (typeof process === 'object' &&
-      process &&
-      process.env &&
-      process.env === 'object')
+    process &&
+    process.env &&
+    process.env === 'object')
     DEBUG = true
 
   var d
@@ -62,7 +68,9 @@ updates.package = function (doc, req) {
   if (typeof console === 'object')
     d = console.error
   else if (DEBUG)
-    d = function() { output.push([].slice.apply(arguments)) }
+    d = function() {
+      output.push([].slice.apply(arguments))
+    };
   else
     d = function() {}
 
@@ -104,7 +112,7 @@ updates.package = function (doc, req) {
   // return error(reason) to abort at any point.
   // the vdu will not allow this _id, and will throw
   // the "forbidden" value.
-  function error (reason) {
+  function error(reason) {
     if (output.length) {
       reason += "\n" + output.map(function(n) {
         return n.map(function(a) {
@@ -139,8 +147,8 @@ updates.package = function (doc, req) {
     ]
 
     var latest = doc.versions &&
-                 doc['dist-tags'] &&
-                 doc.versions[doc["dist-tags"].latest]
+      doc['dist-tags'] &&
+      doc.versions[doc["dist-tags"].latest]
     if (latest && typeof latest === "object") {
       copyFields.forEach(function(k) {
         if (!latest[k])
@@ -174,14 +182,23 @@ updates.package = function (doc, req) {
       if (doc.versions[v].readme)
         changed = true
 
-      delete doc.versions[v].readme
-      delete doc.versions[v].readmeFilename
+      // delete if duplicate, later may delete all to save space
+      if (change) {
+        if (readme == doc.versions[v].readme)
+          delete doc.versions[v].readme
+
+        if (readmeFilename == doc.versions[v].readmeFilename)
+          delete doc.versions[v].readmeFilename
+
+        break
+      }
     }
 
     if (readme && readme.length > README_MAXLEN) {
       changed = true
       readme = readme.slice(0, README_MAXLEN)
     }
+
     doc.readme = readme
     doc.readmeFilename = readmeFilename
 
@@ -190,7 +207,7 @@ updates.package = function (doc, req) {
 
   // return ok(result, message) to exit successfully at any point.
   // Does some final data integrity cleanup stuff.
-  function ok (doc, message) {
+  function ok(doc, message) {
     delete doc.mtime
     delete doc.ctime
     var time = doc.time = doc.time || {}
@@ -218,7 +235,9 @@ updates.package = function (doc, req) {
         }).join(" ")
       }).join("\n")
     }
-    return [doc, JSON.stringify({ok:message})]
+    return [doc, JSON.stringify({
+      ok: message
+    })]
   }
 
   function findLatest(doc) {
@@ -238,19 +257,19 @@ updates.package = function (doc, req) {
   }
 
   // Create new package doc
-  function newDoc (doc) {
+  function newDoc(doc) {
     if (!doc._id) doc._id = doc.name
     if (!doc.versions) doc.versions = {}
     var latest
     for (var v in doc.versions) {
       if (!semver.valid(v, true))
-        return error("Invalid version: "+JSON.stringify(v))
+        return error("Invalid version: " + JSON.stringify(v))
       var p = doc.versions[v]
       if (p.version !== v)
-        return error("Version mismatch: "+JSON.stringify(v)+
-                     " !== "+JSON.stringify(p.version))
+        return error("Version mismatch: " + JSON.stringify(v) +
+          " !== " + JSON.stringify(p.version))
       if (!valid.name(p.name))
-        return error("Invalid name: "+JSON.stringify(p.name))
+        return error("Invalid name: " + JSON.stringify(p.name))
       latest = semver.clean(v, true)
     }
     if (!doc['dist-tags']) doc['dist-tags'] = {}
@@ -265,10 +284,10 @@ updates.package = function (doc, req) {
   function addTag(tag, ver) {
     // tag
     if (!semver.valid(ver)) {
-      return error("setting tag "+tag+" to invalid version: "+ver)
+      return error("setting tag " + tag + " to invalid version: " + ver)
     }
     if (!doc.versions || !doc.versions[ver]) {
-      return error("setting tag "+tag+" to unknown version: "+ver)
+      return error("setting tag " + tag + " to unknown version: " + ver)
     }
     doc["dist-tags"][tag] = semver.clean(ver, true)
     return ok(doc, "updated tag")
@@ -277,16 +296,16 @@ updates.package = function (doc, req) {
   function addNewVersion(ver, body) {
     d('addNewVersion ver=', ver)
     if (typeof body !== "object" || !body) {
-      return error("putting invalid object to version "+req.query.version)
+      return error("putting invalid object to version " + req.query.version)
     }
 
     if (!semver.valid(ver, true)) {
-      return error("invalid version: "+ver)
+      return error("invalid version: " + ver)
     }
 
     if (doc.versions) {
       if ((ver in doc.versions) ||
-          (semver.clean(ver, true) in doc.versions)) {
+        (semver.clean(ver, true) in doc.versions)) {
         // attempting to overwrite an existing version.
         // not allowed
         return error("cannot modify existing version")
@@ -294,15 +313,13 @@ updates.package = function (doc, req) {
     }
 
     if (body.name !== doc.name || body.name !== doc._id) {
-      return error( "Invalid name: "+JSON.stringify(body.name))
+      return error("Invalid name: " + JSON.stringify(body.name))
     }
 
     body.version = semver.clean(body.version, true)
     ver = semver.clean(ver, true)
     if (body.version !== ver) {
-      return error( "version in doc doesn't match version in request: "
-                  + JSON.stringify(body.version)
-                  + " !== " + JSON.stringify(ver) )
+      return error("version in doc doesn't match version in request: " + JSON.stringify(body.version) + " !== " + JSON.stringify(ver))
     }
 
     body._id = body.name + "@" + body.version
@@ -310,17 +327,14 @@ updates.package = function (doc, req) {
     body.maintainers = doc.maintainers
 
     if (body.publishConfig && typeof body.publishConfig === 'object') {
-      Object.keys(body.publishConfig).filter(function (k) {
+      Object.keys(body.publishConfig).filter(function(k) {
         return k.match(/^_/)
-      }).forEach(function (k) {
+      }).forEach(function(k) {
         delete body.publishConfig[k]
       })
     }
 
-    var tag = req.query.tag
-            || (body.publishConfig && body.publishConfig.tag)
-            || body.tag
-            || "latest"
+    var tag = req.query.tag || (body.publishConfig && body.publishConfig.tag) || body.tag || "latest"
 
     doc["dist-tags"] = doc["dist-tags"] || {}
     doc.versions = doc.versions || {}
@@ -358,7 +372,7 @@ updates.package = function (doc, req) {
       var ov = doc.versions[v]
 
       if (ov && !ov.directories &&
-          JSON.stringify(nv.directories) === '{}') {
+        JSON.stringify(nv.directories) === '{}') {
         delete nv.directories
       }
 
@@ -413,8 +427,8 @@ updates.package = function (doc, req) {
       return
     if (!doc._attachments) doc._attachments = {}
     var inline = false
-    for(var k in newdoc._attachments) {
-      if(newdoc._attachments[k].data) {
+    for (var k in newdoc._attachments) {
+      if (newdoc._attachments[k].data) {
         doc._attachments[k] = newdoc._attachments[k]
         inline = true
       }
@@ -423,7 +437,7 @@ updates.package = function (doc, req) {
 
   // Cortex:
   // try to remove old times
-  function mergeTimes(newdoc, doc){
+  function mergeTimes(newdoc, doc) {
     var newtime = newdoc.time
     var time = doc.time
 
@@ -432,9 +446,9 @@ updates.package = function (doc, req) {
       return
     }
 
-    for(var i in time){
+    for (var i in time) {
       if (i === "modified" || i === "unpublished") continue
-      if (!(i in newtime)){
+      if (!(i in newtime)) {
         // Cortex:
         // remove old time
         delete time[i]
@@ -468,7 +482,7 @@ updates.package = function (doc, req) {
       var tags = Object.keys(newdoc["dist-tags"])
       if (tags.length) {
         doc["dist-tags"] = doc["dist-tags"] || {}
-        tags.forEach(function (t) {
+        tags.forEach(function(t) {
           doc["dist-tags"][t] = newdoc["dist-tags"][t]
         })
       }
