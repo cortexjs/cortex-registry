@@ -121,10 +121,15 @@ shows.package = function(doc, req) {
       ver = doc["dist-tags"][ver]
     }
     body = doc.versions[ver]
+
     if (!body) {
       code = 404
       body = {
         "error": "version not found: " + req.query.version
+      }
+    } else if (doc.time && doc.time[ver]) {
+      body.time = {
+        'modified': doc.time[ver]
       }
     }
   } else {
