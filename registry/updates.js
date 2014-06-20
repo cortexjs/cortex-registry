@@ -183,7 +183,7 @@ updates.package = function(doc, req) {
         changed = true
 
       // delete if duplicate, later may delete all to save space
-      if (change) {
+      if (changed) {
         if (readme == doc.versions[v].readme)
           delete doc.versions[v].readme
 
