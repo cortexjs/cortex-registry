@@ -127,21 +127,23 @@ shows.package = function(doc, req) {
       body = {
         "error": "version not found: " + req.query.version
       }
-    } else if (doc.time && doc.time[ver]) {
-      body.time = {
-        'modified': doc.time[ver]
+    } else {
+      if (doc.time && doc.time[ver] && !body.time) {
+        body.time = {
+          'modified': doc.time[ver]
+        }
       }
+
+      if (doc.versions)
+        body.allVersions = Object.keys(doc.versions)
+
+      body.readme = body.readme || doc.readme
     }
   } else {
     body = doc
     delete body._revisions
   }
 
-  if (!body.error) {
-    // if (doc.versions)
-    //   body.versions = Object.keys(doc.versions)
-    body.readme = body.readme || doc.readme
-  }
 
   body = req.query.jsonp ? req.query.jsonp + "(" + JSON.stringify(body) + ")" : toJSON(body)
 
