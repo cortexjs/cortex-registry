@@ -138,9 +138,8 @@ shows.package = function(doc, req) {
   }
 
   if (!body.error) {
-    if (doc.versions)
-      body.versions = Object.keys(doc.versions)
-
+    // if (doc.versions)
+    //   body.versions = Object.keys(doc.versions)
     body.readme = body.readme || doc.readme
   }
 
