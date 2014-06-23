@@ -8,18 +8,26 @@ updates.delete = function(doc, req) {
     }, {
       error: "method not allowed"
     }]
-
+  var semver = require("semver")
   require("monkeypatch").patch(Object, Date, Array, String)
   var t = doc.time || {}
   t.unpublished = {
     name: req.userCtx.name,
     time: new Date().toISOString()
   }
+
+  var time = {}
+  Object.keys(t).filter(function(p) {
+    return !semver.valid(p, true)
+  }).forEach(function(p) {
+    time[p] = t[p];
+  })
+
   return [{
     _id: doc._id,
     _rev: doc._rev,
     name: doc._id,
-    time: t
+    time: time
   }, JSON.stringify({
     ok: "deleted"
   })]
