@@ -83,6 +83,8 @@ exports.valid =
          || !n.match(/^[a-z]/)
          || !n.match(/[a-z0-9]$/)
          || !n.match(/^[a-z0-9-.]+$/)
+         || n.toLowerCase() == 'neurons'
+         || n.toLowerCase() == 'cortex_modules'
          || n.toLowerCase() === "node_modules"
          || n !== encodeURIComponent(n)
          || n.toLowerCase() === "favicon.ico") {
