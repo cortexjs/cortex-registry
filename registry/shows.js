@@ -40,8 +40,8 @@ shows.package = function(doc, req) {
         doc.versions[clean] = p
       }
 
-      // skip tarball kludge
-      if (false && doc.versions[v].dist.tarball) {
+      // tarball kludge
+      if (doc.versions[v].dist.tarball) {
         // if there is an attachment for this tarball, then use that.
         // make it point at THIS registry that is being requested,
         // with the full /db/_design/app/_rewrite if that is being used,
