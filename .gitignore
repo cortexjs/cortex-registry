@@ -4,6 +4,7 @@ _update.sh
 
 test/fixtures/*.couch
 test/fixtures/.registry_design
+test/fixtures/.downloads_design
 
 *.dump
 
