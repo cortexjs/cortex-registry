@@ -370,10 +370,10 @@ module.exports = function (doc, oldDoc, user, dbCtx) {
       if (version.hasOwnProperty('scripts')) {
         assert(version.scripts && typeof version.scripts === "object",
                "'scripts' field must be an object")
-        for (var s in version.scripts) {
-          assert(typeof version.scripts[s] === "string",
-                 "Non-string script field: " + s)
-        }
+        // for (var s in version.scripts) {
+        //   assert(typeof version.scripts[s] === "string",
+        //          "Non-string script field: " + s)
+        // }
       }
     }
   }
