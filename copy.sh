@@ -28,6 +28,13 @@ case $c in
   *);;
 esac
 
+
+c=${c/PASSWORD/$PASSWORD}
+c=${c// /%20}
+
+c="$(node -p 'process.argv[1].replace(/\/$/, "")' "$c")"
+u="$(node -p 'require("url").resolve(process.argv[1], "_users")' "$c")"
+
 echo "Did you already run the load-views.sh script? (type 'yes')"
 read didLoad
 if ! [ "$didLoad" == "yes" ]; then
@@ -36,20 +43,28 @@ if ! [ "$didLoad" == "yes" ]; then
 fi
 
 rev=$(curl -k "$c"/_design/app | json _rev)
+if [ "$rev" != "" ]; then
+  rev="?rev=$rev"
+fi
 
-auth="$(node -pe 'require("url").parse(process.argv[1]).auth' "$c")"
+auth="$(node -pe 'require("url").parse(process.argv[1]).auth || ""' "$c")"
 url="$(node -pe 'u=require("url");p=u.parse(process.argv[1]);delete p.auth;u.format(p)' "$c")"
 
-
-
-if [ "${rev}" == "" ]; then
 curl "$url/_design/scratch" \
    -k -u "$auth" \
   -X COPY \
-  -H destination:'_design/app'
-else
-curl "$url/_design/scratch" \
-   -k -u "$auth" \
-  -X COPY \
-  -H destination:'_design/app?rev='$rev
+  -H destination:'_design/app'$rev
+
+
+
+rev=$(curl -k "$u"/_design/_auth | json _rev)
+if [ "$rev" != "" ]; then
+  rev="?rev=$rev"
 fi
+auth="$(node -pe 'require("url").parse(process.argv[1]).auth || ""' "$u")"
+url="$(node -pe 'u=require("url");p=u.parse(process.argv[1]);delete p.auth;u.format(p)' "$u")"
+
+curl "$url/_design/scratch" \
+   -k -u "$auth" \
+  -X COPY \
+  -H destination:'_design/_auth'$rev
