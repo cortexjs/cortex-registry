@@ -51,6 +51,10 @@ module.exports =
     , to:"../../../_users/_design/_auth/_list/email/listAll"
     , method: "GET" }
 
+  , { from: "/-/user-by-github/:github"
+    , to:"../../../_users/_design/_auth/_list/github/listAll"
+    , method: "GET" }
+
   // , { from: "/-/top"
   //   , to:"_view/npmTop"
   //   , query: { group_level: 1 }

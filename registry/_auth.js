@@ -1,6 +1,6 @@
 // sync to $host/_users/_design/_auth
 
-var ddoc = {_id:"_design/_auth", language:"javascript"}
+var ddoc = {_id:"_design/scratch", language:"javascript"}
 
 module.exports = ddoc
 
@@ -35,6 +35,21 @@ ddoc.lists = {
       var dm = data.email || undefined
       if (data.email !== email) continue
       out.push(row.value.name)
+    }
+    send(toJSON(out))
+  },
+  github:function (head, req) {
+    var row
+      , data
+      , id
+      , github = req.query.github || undefined
+      , out = []
+    while (row = getRow()) {
+      id = row.id.replace(/^org\.couchdb\.user:/, '')
+      data = row.value
+      if (data.github && (data.github == ("https://github.com/" + github) ||
+        data.github == ("http://github.com/" + github))) 
+        out.push(row.value.name)
     }
     send(toJSON(out))
   }
@@ -92,6 +107,10 @@ ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx, secObj) {
     throw({forbidden: 'Email must be an email address'})
   }
 
+  if (newDoc.github && !newDoc.github.match(/^https?:\/\/github\.com\/[a-z0-9][a-z0-9-]+/)) {
+    throw({forbidden: 'Github must be a valid github url'})
+  }
+
   if (oldDoc) { // validate all updates
     if (oldDoc.name !== newDoc.name) {
       throw({forbidden: 'Usernames can not be changed.'});
@@ -146,8 +165,7 @@ ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx, secObj) {
       }
       if (oldDoc.email !== newDoc.email) {
         throw({
-          forbidden: 'You may not change your email address\n' +
-            'Please visit https://npmjs.org/email-edit to do so.'
+          forbidden: 'You may not change your email address'
         })
       }
       // validate role updates
@@ -195,6 +213,33 @@ ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx, secObj) {
 ddoc.views = {
   listAll: { map : function (doc) { return emit(doc._id, doc) } },
 
+  userByEmail: {
+    map: function (doc) {
+      if (doc.email || doc.name) {
+        emit([ doc.email, doc.name ], 1)
+      }
+    },
+    reduce: "_sum"
+  },
+
+  userByGithub: {
+    map: function(doc) {
+      if(doc.github || doc.name) {
+        emit([doc.github, doc.name], 1)
+      }
+    },
+    reduce: "_sum"
+  },
+
+  githubPass: {
+    map: function(doc) {
+      if(doc.secret && doc.secret.accessToken) {
+        emit([doc.name], 1)
+      }
+    }, 
+    reduce: "_sum"
+  },
+
   invalidUser: { map: function (doc) {
     var errors = []
     if (doc.type !== 'user') {
@@ -227,6 +272,10 @@ ddoc.views = {
 
     if (!(doc.email && doc.email.match(/^.+@.+\..+$/))) {
       errors.push('Email must be an email address')
+    }
+
+    if (doc.github && !doc.github.match(/^https?:\/\/github\.com\/[a-z0-9][a-z0-9-]+/)) {
+      errors.push('Github must be a valid github url')
     }
 
     if (doc.password_sha && !doc.salt) {
@@ -267,6 +316,10 @@ ddoc.views = {
 
     if (!(doc.email && doc.email.match(/^.+@.+\..+$/))) {
       return emit(['Email must be an email address', doc.email, doc.name], 1)
+    }
+
+    if (doc.github && !doc.github.match(/^https?:\/\/github\.com\/[a-z0-9][a-z0-9-]+/)) {
+      return emit(['Github must be a valid github url', doc.github, doc.name], 1)
     }
 
     if (doc.password_sha && !doc.salt) {
