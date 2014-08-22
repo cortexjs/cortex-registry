@@ -228,7 +228,6 @@ updates.package = function(doc, req) {
       time[v] = time[v] || (new Date()).toISOString()
     }
     delete doc.time.unpublished
-
     findLatest(doc)
     latestCopy(doc)
     readmeTrim(doc)
@@ -409,10 +408,17 @@ updates.package = function(doc, req) {
     }
 
 
+    var tags = doc['dist-tags'] || {};
+
     if (revMatch) {
       for (var v in doc.versions) {
-        if (!newdoc.versions[v])
+        if (!newdoc.versions[v]) {
           delete doc.versions[v]
+          for (var tag in tags) {
+            if(tags[tag] == v) 
+              delete tags[tag];
+          }
+        }
       }
     }
   }
